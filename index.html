@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PayEase - Modern Payment App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        .screen {
+            display: none;
+            animation: fadeIn 0.3s ease-in;
+        }
+        .screen.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .success-animation {
+            animation: scaleUp 0.5s ease-out;
+        }
+        @keyframes scaleUp {
+            0% { transform: scale(0); }
+            70% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        .qr-code {
+            background: repeating-conic-gradient(#1A73E8 0% 25%, #fff 0% 50%) 
+                        50%/20px 20px;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm p-4 fixed bottom-0 w-full z-10">
+        <div class="flex justify-around items-center max-w-md mx-auto">
+            <button onclick="showScreen('home')" class="flex flex-col items-center text-gray-600 hover:text-[#1A73E8]">
+                <i class="bi bi-house text-xl"></i>
+                <span class="text-xs mt-1">Home</span>
+            </button>
+            <button onclick="showScreen('rewards')" class="flex flex-col items-center text-gray-600 hover:text-[#1A73E8]">
+                <i class="bi bi-gift text-xl"></i>
+                <span class="text-xs mt-1">Rewards</span>
+            </button>
+            <button onclick="showScreen('scan')" class="flex flex-col items-center text-gray-600 hover:text-[#1A73E8]">
+                <i class="bi bi-qr-code-scan text-xl"></i>
+                <span class="text-xs mt-1">Scan</span>
+            </button>
+            <button onclick="showScreen('history')" class="flex flex-col items-center text-gray-600 hover:text-[#1A73E8]">
+                <i class="bi bi-clock-history text-xl"></i>
+                <span class="text-xs mt-1">History</span>
+            </button>
+            <button onclick="showScreen('profile')" class="flex flex-col items-center text-gray-600 hover:text-[#1A73E8]">
+                <i class="bi bi-person text-xl"></i>
+                <span class="text-xs mt-1">Profile</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Screens -->
+    <main class="pb-20 max-w-md mx-auto">
+        <!-- Home Screen -->
+        <section id="home" class="screen active p-4">
+            <div class="bg-gradient-to-r from-[#1A73E8] to-[#1557B0] text-white rounded-xl p-6 mb-6">
+                <h1 class="text-2xl font-semibold mb-2">Welcome Back!</h1>
+                <p class="text-sm opacity-90">Available Balance</p>
+                <p class="text-3xl font-bold mb-4">€1,234.56</p>
+                <div class="flex gap-2">
+                    <button class="bg-white/20 px-4 py-2 rounded-lg text-sm">
+                        <i class="bi bi-plus-lg"></i> Add Money
+                    </button>
+                    <button class="bg-white/20 px-4 py-2 rounded-lg text-sm">
+                        <i class="bi bi-arrow-down"></i> Withdraw
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-[#FBBC05]/10 p-4 rounded-lg mb-6">
+                <div class="flex items-center">
+                    <i class="bi bi-gift-fill text-[#FBBC05] text-xl mr-2"></i>
+                    <p class="text-[#202124] font-medium">Earn €5 on your first 3 payments!</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-4 mb-6">
+                <button onclick="showScreen('send')" class="bg-white p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                    <i class="bi bi-send text-2xl text-[#1A73E8] mb-2"></i>
+                    <p class="font-medium text-sm">Send</p>
+                </button>
+                <button onclick="showScreen('scan')" class="bg-white p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                    <i class="bi bi-qr-code text-2xl text-[#1A73E8] mb-2"></i>
+                    <p class="font-medium text-sm">Scan</p>
+                </button>
+                <button onclick="showScreen('split')" class="bg-white p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                    <i class="bi bi-people text-2xl text-[#1A73E8] mb-2"></i>
+                    <p class="font-medium text-sm">Split</p>
+                </button>
+            </div>
+
+            <div class="bg-white rounded-xl p-4">
+                <h3 class="font-semibold mb-4">Recent Transactions</h3>
+                <div class="space-y-4" id="recentTransactions">
+                    <!-- Recent transactions will be inserted here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Send Money Screen -->
+        <section id="send" class="screen p-4">
+            <div class="flex items-center mb-6">
+                <button onclick="showScreen('home')" class="text-gray-600 mr-4">
+                    <i class="bi bi-arrow-left text-xl"></i>
+                </button>
+                <h2 class="text-2xl font-semibold">Send Money</h2>
+            </div>
+            <form onsubmit="handleSendMoney(event)" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">To</label>
+                    <input type="text" placeholder="Mobile number or IBAN" class="w-full p-3 border rounded-lg" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Amount (€)</label>
+                    <input type="number" placeholder="0.00" class="w-full p-3 border rounded-lg text-2xl" required min="0.01" step="0.01">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Note (Optional)</label>
+                    <input type="text" placeholder="What's this for?" class="w-full p-3 border rounded-lg">
+                </div>
+                <button type="submit" class="w-full bg-[#1A73E8] text-white py-3 rounded-lg font-medium hover:bg-[#1557B0] transition-colors">
+                    Continue
+                </button>
+            </form>
+        </section>
+
+        <!-- Split Bills Screen -->
+        <section id="split" class="screen p-4">
+            <div class="flex items-center mb-6">
+                <button onclick="showScreen('home')" class="text-gray-600 mr-4">
+                    <i class="bi bi-arrow-left text-xl"></i>
+                </button>
+                <h2 class="text-2xl font-semibold">Split Bill</h2>
+            </div>
+            <form onsubmit="handleSplitBill(event)" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Total Amount (€)</label>
+                    <input type="number" id="totalAmount" placeholder="0.00" class="w-full p-3 border rounded-lg" required min="0.01" step="0.01">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Number of People</label>
+                    <input type="number" id="numPeople" placeholder="2" class="w-full p-3 border rounded-lg" required min="2">
+                </div>
+                <div id="splitResult" class="bg-gray-50 p-4 rounded-lg hidden">
+                    <p class="text-center text-lg font-medium">Each person pays:</p>
+                    <p class="text-center text-3xl font-bold text-[#1A73E8]">€0.00</p>
+                </div>
+                <button type="submit" class="w-full bg-[#1A73E8] text-white py-3 rounded-lg font-medium hover:bg-[#1557B0] transition-colors">
+                    Calculate Split
+                </button>
+            </form>
+        </section>
+
+        <!-- Scan QR Screen -->
+        <section id="scan" class="screen p-4">
+            <div class="flex items-center mb-6">
+                <button onclick="showScreen('home')" class="text-gray-600 mr-4">
+                    <i class="bi bi-arrow-left text-xl"></i>
+                </button>
+                <h2 class="text-2xl font-semibold">Scan to Pay</h2>
+            </div>
+            <div class="aspect-square max-w-xs mx-auto mb-6">
+                <div class="qr-code w-full h-full rounded-xl border-2 border-[#1A73E8]"></div>
+            </div>
+            <p class="text-center text-gray-600 mb-4">Point your camera at a QR code</p>
+            <div class="text-center">
+                <button onclick="handleScanQR()" class="bg-[#1A73E8] text-white py-3 px-6 rounded-lg font-medium hover:bg-[#1557B0] transition-colors">
+                    <i class="bi bi-camera mr-2"></i>
+                    Open Camera
+                </button>
+            </div>
+        </section>
+
+        <!-- Rewards Screen -->
+        <section id="rewards" class="screen p-4">
+            <h2 class="text-2xl font-semibold mb-6">Rewards</h2>
+            <div class="bg-gradient-to-r from-[#FBBC05] to-[#F29900] text-white rounded-xl p-6 mb-6">
+                <h3 class="text-xl font-semibold mb-2">Your Rewards</h3>
+                <p class="text-3xl font-bold mb-2">€15.00</p>
+                <p class="text-sm opacity-90">Total Cashback Earned</p>
+            </div>
+            <div class="space-y-4">
+                <div class="bg-white p-4 rounded-lg shadow-sm">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="font-medium">First Payment Bonus</p>
+                            <p class="text-sm text-gray-500">Valid until Dec 31, 2023</p>
+                        </div>
+                        <p class="font-semibold text-[#34A853]">€5.00</p>
+                    </div>
+                </div>
+                <!-- More rewards here -->
+            </div>
+        </section>
+
+        <!-- Transaction History Screen -->
+        <section id="history" class="screen p-4">
+            <h2 class="text-2xl font-semibold mb-6">Transaction History</h2>
+            <div class="space-y-4" id="transactionList">
+                <!-- Transactions will be inserted here -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-20">
+        <div class="bg-white rounded-xl p-6 m-4 max-w-xs w-full text-center success-animation">
+            <div class="text-[#34A853] text-6xl mb-4">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+            <h3 class="text-xl font-semibold mb-2">Payment Successful!</h3>
+            <p id="successMessage" class="text-gray-600 mb-4"></p>
+            <button onclick="closeSuccessModal()" class="w-full bg-[#1A73E8] text-white py-3 rounded-lg font-medium">
+                Done
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Mock transaction data
+        let transactions = [
+            { type: 'sent', amount: 10, recipient: 'John Doe', date: '12 Oct 2023' },
+            { type: 'paid', amount: 5.50, recipient: 'Café', date: '11 Oct 2023' },
+            { type: 'sent', amount: 25, recipient: 'Jane Smith', date: '10 Oct 2023' }
+        ];
+
+        // Screen navigation
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        // Show success modal
+        function showSuccessModal(message) {
+            document.getElementById('successMessage').textContent = message;
+            document.getElementById('successModal').classList.remove('hidden');
+            document.getElementById('successModal').classList.add('flex');
+        }
+
+        // Close success modal
+        function closeSuccessModal() {
+            document.getElementById('successModal').classList.add('hidden');
+            document.getElementById('successModal').classList.remove('flex');
+            showScreen('home');
+        }
+
+        // Handle send money
+        function handleSendMoney(event) {
+            event.preventDefault();
+            const amount = event.target.elements[1].value;
+            const recipient = event.target.elements[0].value;
+            
+            transactions.unshift({
+                type: 'sent',
+                amount: parseFloat(amount),
+                recipient: recipient,
+                date: new Date().toLocaleDateString('en-GB', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric'
+                })
+            });
+
+            showSuccessModal(`€${amount} sent to ${recipient}`);
+            event.target.reset();
+            updateTransactionHistory();
+        }
+
+        // Handle QR scan
+        function handleScanQR() {
+            const amount = 5.50;
+            const recipient = 'Café';
+            
+            transactions.unshift({
+                type: 'paid',
+                amount: amount,
+                recipient: recipient,
+                date: new Date().toLocaleDateString('en-GB', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric'
+                })
+            });
+
+            showSuccessModal(`Payment of €${amount} to ${recipient} successful`);
+            updateTransactionHistory();
+        }
+
+        // Handle split bill
+        function handleSplitBill(event) {
+            event.preventDefault();
+            const totalAmount = parseFloat(document.getElementById('totalAmount').value);
+            const numPeople = parseInt(document.getElementById('numPeople').value);
+            const splitAmount = (totalAmount / numPeople).toFixed(2);
+
+            const resultDiv = document.getElementById('splitResult');
+            resultDiv.classList.remove('hidden');
+            resultDiv.querySelector('p:last-child').textContent = `€${splitAmount}`;
+        }
+
+        // Update transaction history
+        function updateTransactionHistory() {
+            const transactionList = document.getElementById('transactionList');
+            const recentTransactions = document.getElementById('recentTransactions');
+            
+            const transactionHTML = transactions.map(transaction => `
+                <div class="bg-white p-4 rounded-lg shadow-sm">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="font-medium">${transaction.type === 'sent' ? 'Sent to' : 'Paid to'} ${transaction.recipient}</p>
+                            <p class="text-sm text-gray-500">${transaction.date}</p>
+                        </div>
+                        <p class="font-semibold ${transaction.type === 'sent' ? 'text-red-600' : 'text-[#34A853]'}">
+                            €${transaction.amount.toFixed(2)}
+                        </p>
+                    </div>
+                </div>
+            `).join('');
+            
+            transactionList.innerHTML = transactionHTML;
+            recentTransactions.innerHTML = transactions.slice(0, 3)
+                .map(t => transactionHTML).join('');
+        }
+
+        // Initial transaction history update
+        updateTransactionHistory();
+    </script>
+<script>document.body.addEventListener('wheel', e => { if (!e.ctrlKey) return; e.preventDefault(); return }, { passive: false })</script>
+	</body>
+</html>
